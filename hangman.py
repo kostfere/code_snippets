@@ -1,117 +1,60 @@
 # coding: utf-8
-
 import random
-hanged_stages=['''
-------------
-|         |         
-|          O''','''
 
+MAX_MISTAKES = 5
+ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyz0123456789'
+WORDS = ['3dhubs', 'marvin', 'print', 'filament', 'order', 'layer']
 
-------------
-|         | 
-|          O 
-|         / ''','''
+def play_game():
+    word = get_random_word()
+    guessed_chars = set()
+    mistakes = 0
 
+    print(f"Let's play Hangman! You can make up to {MAX_MISTAKES} mistakes.")
+    print(f"The word has {len(word)} characters: {'_' * len(word)}")
 
-------------
-|         | 
-|          O 
-|         / |''','''
+    while mistakes <= MAX_MISTAKES:
+        print(f"\nGuessed letters: {', '.join(sorted(guessed_chars))}")
+        print(f"Mistakes remaining: {MAX_MISTAKES - mistakes}")
+        guess = get_user_guess(guessed_chars)
+        guessed_chars.add(guess)
 
-------------
-|         | 
-|          O 
-|         / |
-|          | ''','''
-
-
-------------
-|         |
-|          O 
-|         / |
-|          |
-|         /  
-|
-|            ''','''
-
-
-------------
-|         |
-|          O 
-|         / |
-|          |
-|         / | 
-|
-|            ''']
-
-def word_exists(all_chars, word):
-    # if all the letter required for making the word are present return true else false
-    return all([c in all_chars for c in word])
-
-def get_new_char_from_user(chars_till_now):
-    while True:
-        new_char=input("\n\nEnter your guess: ")
-        new_char = new_char[0].lower() ## take the first character and make it lowercase
-        if new_char in chars_till_now: ## check if the user has already selected this character
-            print('You have already chosen this letter')
-        elif new_char not in 'abcdefghijklmnopqrstuvwxyz0123456789': ## make sure it's  valid
-            print('Your selection is invalid')
+        if guess in word:
+            revealed_word = reveal_word(word, guessed_chars)
+            print(f"The letter '{guess}' is in the word: {revealed_word}")
+            if '_' not in revealed_word:
+                print("Congrats, you found the word!")
+                return
         else:
-            return new_char
+            mistakes += 1
+            print(f"The letter '{guess}' is not in the word. Number of mistakes: {mistakes}")
+
+    print(f"You failed! The word was: {word}")
+
+def get_random_word():
+    return random.choice(WORDS)
+
+def get_user_guess(guessed_chars):
+    while True:
+        guess = input("\n\nEnter your guess: ")[0].lower()
+        if guess in guessed_chars:
+            print('You have already chosen this letter.')
+        elif guess not in ALLOWED_CHARACTERS:
+            print('Your selection is invalid.')
+        else:
+            return guess
+
+def reveal_word(word, guessed_chars):
+    return ''.join(c if c in guessed_chars else '_' for c in word)
 
 def play_again():
-    print('Do you want to play again? (yes or no)')
-    return input().lower().startswith('y')
+    return input('Do you want to play again? (yes or no) ').lower().startswith('y')
 
-words= ['3dhubs', 'marvin', 'print', 'filament', 'order', 'layer']
-
-## initialize parameters
-random_choice =random.randint(0,len(words)-1)
-word = words[random_choice]
-nr_mistakes=0
-chars_till_now=''
-game_done = False
-cnt=0
-
-while True:
-    if cnt==0:
-        print("Let's play Hangman!!! You can make up to 5 mistakes")
-        print(f"The word has {len(word)} characters: ")
-        print("_"*len(word))
-        cnt+=1
-        
-    new_char = get_new_char_from_user(chars_till_now)
-    chars_till_now = chars_till_now+new_char
-
-    if new_char in word: ## in case of correct guess
-        print(f"The letter '{new_char}' is in the word.")
-        print(''.join(c if c in chars_till_now else '_' for c in word))
-        if word_exists(chars_till_now,word):
-            print("Congats, you found the word!!!")
-            game_done = True
-
-    else: ## in case of incorrect guess
-        print(f"The letter '{new_char}' is not in the word.")
-        print(hanged_stages[nr_mistakes])
-        nr_mistakes += 1
-        print(''.join(c if c in chars_till_now else '_' for c in word)) 
-        if nr_mistakes==6:
-            print("You failed!!! The word was:", word)
-            game_done = True
-            
-    if game_done:
-        if nr_mistakes<=2: ## high score is defined as 2 mistakes or less
-            if nr_mistakes==0:
-                print('Wow you achieved high score, no wrong guesses!!')
-            else:
-                print(f'Wow you achieved high score, only {nr_mistakes} wrong guesses!!')
-        if play_again():
-            ## in case of new game re-initialize parameters
-            random_choice =random.randint(0,len(words)-1)
-            word = words[random_choice]
-            nr_mistakes=0
-            chars_till_now=''
-            game_done = False
-            cnt=0
-        else:
+def main():
+    while True:
+        play_game()
+        if not play_again():
             break
+
+if __name__ == '__main__':
+    main()
